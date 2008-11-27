@@ -1,0 +1,295 @@
+<!-- saved from url=(0014)about:internet -->
+<html>
+  <head>
+    <title>Blech Test Page!</title>
+  </head>
+  <body>
+    <div id="log_area" style="position: absolute; top: 0; right: 0; border: 4px solid #c00;width: 200px;">
+      <h2>Debug Output</h2>
+    </div>
+    
+    <h1>Blech Test Page!</h1>
+    
+    <h2>Line Graph - Basic</h2>
+    <div id="linebasic" style="height: 200px; width: 600px;"></div>
+    
+    <h2>Scatter Plot - Basic</h2>
+    <div id="spbasic" style="height: 200px; width: 600px;"></div>
+    
+    <h2>Scatter Plot - Custom Points - Image</h2>
+    <div id="spcustpointimg" style="height: 200px; width: 600px;"></div>
+    
+    <h2>Scatter Plot - Custom Points - Function</h2>
+    <div id="spcustpointfunc" style="height: 200px; width: 600px;"></div>
+    
+    <h2>Line Graph - Custom Line</h2>
+    <div id="linecustomline" style="height: 200px; width: 600px;"></div>
+    
+    <h2>Scatter Plot - Custom Background</h2>
+    <div id="spcustback" style="height: 200px; width: 600px;"></div>
+    
+    <h2>Scatter Plot - Canvas Background</h2>
+    <div id="spcanv" style="height: 200px; width: 600px;"></div>
+    
+    <h2>Scatter Plot - Padded Background</h2>
+    <div id="spcanvpadded" 
+        style="height: 200px; width: 600px; padding: 10px 10px 30px 15px;"></div>
+    
+    <h2>Scatter Plot - Custom Point Mouseovers</h2>
+    <div id="spmouseovers" style="height: 200px; width: 600px;"></div>
+    
+    <h2>Scatter Plot - Animated Adds</h2>
+    <div id="spanimadd"></div>
+    
+    <h2>Line Graph - Animated Adds</h2>
+    <div id="lineanimadd"></div>
+    
+    <h2>Overlay Canvas</h2>
+    <div id="spoverlay" style="height: 200px; width: 600px;"></div>
+    
+    <h2>Scatter Plot - Animated Edit</h2>
+    
+    <h2>Line Graph - Animated Edit</h2>
+    
+    <h2>Scaling</h2>
+    <div id="spscaled" style="height: 200px; width: 600px;"></div>
+    
+    <h2>Removing Points</h2>
+    <div id="lineremove" style="height: 200px; width: 600px;"></div>
+    
+    <img src="graph_green_pin.png" id="pointImage" style="position: absolute; left: -10000;"/>
+    <img src="background.png" id="background" style="position: absolute; left: -10000;" />
+    
+    <!-- script stuff -->
+    <script src="prototype.js"></script>
+    <!--[if IE]>
+      <script src="excanvas.js"></script>
+    <![endif]-->
+    <script src="blech.js"></script>
+    <script>
+      
+      Event.observe(window, 'load', function() {
+        
+        // simple logging function
+        function log(text) {
+          $('log_area').insert("<div>" + text + "</div>");
+        }
+      
+        // draw a basic line graph
+        var lineBasic = new GraphBase($("linebasic"), { connectPoints: true });
+        lineBasic.freezeRedraw();
+        lineBasic.addPoint(100, 20);
+        lineBasic.addPoint(500, 100);
+        lineBasic.addPoint(300, 60);
+        lineBasic.addPoint(200, 40);
+        lineBasic.addPoint(600, 120);
+        lineBasic.addPoint(400, 80);
+        lineBasic.unfreezeRedraw(true);
+    
+        // draw a basic scatter plot
+        var scatterPlotBasic = new GraphBase($("spbasic"));
+        scatterPlotBasic.addPoint(100, 20);
+        scatterPlotBasic.addPoint(500, 100);
+        scatterPlotBasic.addPoint(300, 60);
+        scatterPlotBasic.addPoint(200, 40);
+        scatterPlotBasic.addPoint(600, 120);
+        scatterPlotBasic.addPoint(400, 80);
+      
+        // draw a scatter plot with an image as a point
+        var scatterPlotImgPoint = new GraphBase($("spcustpointimg"), 
+            { pointImage: $('pointImage')});
+        scatterPlotImgPoint.addPoint(100, 20);
+        scatterPlotImgPoint.addPoint(500, 100);
+        scatterPlotImgPoint.addPoint(300, 60);
+        scatterPlotImgPoint.addPoint(200, 40);
+        scatterPlotImgPoint.addPoint(600, 120);
+        scatterPlotImgPoint.addPoint(400, 80);
+      
+        // draw a scatter plot with a function as its point
+        var scatterPlotImgFunc = new GraphBase($('spcustpointfunc'), 
+            { pointImage: function(x, y) {
+              this.graphContext.beginPath();
+              this.graphContext.fillStyle = "#f00";
+              this.graphContext.arc(x, y, 2, 0, Math.PI*2, true);
+              this.graphContext.fill();
+            } });
+        scatterPlotImgFunc.addPoint(100, 20);
+        scatterPlotImgFunc.addPoint(500, 100);
+        scatterPlotImgFunc.addPoint(300, 60);
+        scatterPlotImgFunc.addPoint(200, 40);
+        scatterPlotImgFunc.addPoint(600, 120);
+        scatterPlotImgFunc.addPoint(400, 80);
+      
+        // draw a line chart with a custom line connector
+        var lineGraphLineFunc = new GraphBase($('linecustomline'),
+            { connectPoints: true,
+              onConnectPoints: function(x1, y1, x2, y2) {
+                this.graphContext.beginPath();
+                this.graphContext.strokeStyle = "#f00";
+                this.graphContext.moveTo(x1, y1);
+                this.graphContext.bezierCurveTo(x1 + 50, y1 + 50, x2 - 50, y2 - 50, 
+                    x2, y2);
+                this.graphContext.stroke();
+            }});
+        lineGraphLineFunc.addPoint(100, 20);
+        lineGraphLineFunc.addPoint(500, 100);
+        lineGraphLineFunc.addPoint(300, 60);
+        lineGraphLineFunc.addPoint(200, 40);
+        lineGraphLineFunc.addPoint(600, 120);
+        lineGraphLineFunc.addPoint(400, 80);
+      
+        // draw a scatter plot with a custom background image
+        var scatterPlotBackImg = new GraphBase($('spcustback'),
+            { background: $('background') });
+        scatterPlotBackImg.addPoint(100, 20);
+        scatterPlotBackImg.addPoint(500, 100);
+        scatterPlotBackImg.addPoint(300, 60);
+        scatterPlotBackImg.addPoint(200, 40);
+        scatterPlotBackImg.addPoint(600, 120);
+        scatterPlotBackImg.addPoint(400, 80);
+      
+        // draw a scatter plot with a custom background canvas
+        var scatterPlotBackFunc = new GraphBase($('spcanv'),
+            { background: function() {
+                var lingrad = this.backContext.createLinearGradient(0,0,600,0);
+                lingrad.addColorStop(0, '#00ABEB');
+                lingrad.addColorStop(0.5, '#fff');
+              
+                this.backContext.fillStyle = lingrad;
+                this.backContext.fillRect(0, 0, this.width, this.height);
+            }});
+        scatterPlotBackFunc.addPoint(100, 20);
+        scatterPlotBackFunc.addPoint(500, 100);
+        scatterPlotBackFunc.addPoint(300, 60);
+        scatterPlotBackFunc.addPoint(200, 40);
+        scatterPlotBackFunc.addPoint(600, 120);
+        scatterPlotBackFunc.addPoint(400, 80);
+      
+        // Draw a scatter plot that has a custom background function but has some
+        // padding to it
+        var scatterPlotPadBack = new GraphBase($('spcanvpadded'),
+            { background: function() {
+                var lingrad = this.backContext.createLinearGradient(0,0,600,0);
+                lingrad.addColorStop(0, '#00ABEB');
+                lingrad.addColorStop(0.5, '#fff');
+              
+                this.backContext.fillStyle = lingrad;
+                this.backContext.fillRect(0, 0, this.backWidth, this.backHeight);
+                
+                this.backContext.beginPath();
+                this.backContext.moveTo(this.paddingLeft,
+                    this.backHeight - this.paddingBottom)
+                this.backContext.lineTo(this.paddingLeft, 0);
+                this.backContext.moveTo(this.paddingLeft,
+                    this.backHeight - this.paddingBottom);
+                this.backContext.lineTo(this.backWidth,
+                    this.backHeight - this.paddingBottom);
+                this.backContext.stroke();
+              }
+            });
+        scatterPlotPadBack.addPoint(100, 20);
+        scatterPlotPadBack.addPoint(500, 100);
+        scatterPlotPadBack.addPoint(300, 60);
+        scatterPlotPadBack.addPoint(200, 40);
+        scatterPlotPadBack.addPoint(600, 120);
+        scatterPlotPadBack.addPoint(400, 80);
+      
+        // draw a scatter plot with custom hovers on it
+        var scatterPlotMouseOvers = new GraphBase($('spmouseovers'),
+          {
+            onMouseOver: function(id) {
+              log("In: " + id);
+            },
+            onMouseOut: function(id) {
+              log("Out: " + id);
+            }
+          }
+        );
+        scatterPlotMouseOvers.addPoint(100, 20, 1);
+        scatterPlotMouseOvers.addPoint(500, 100, 2);
+        scatterPlotMouseOvers.addPoint(300, 60, 3);
+        scatterPlotMouseOvers.addPoint(200, 40, 4);
+        scatterPlotMouseOvers.addPoint(600, 120, 5);
+        scatterPlotMouseOvers.addPoint(400, 80, 6);
+      
+        // draw a scatter plot with a cool average overlay
+        log("Overlay Started...")
+        var scatterPlotOverlay = new GraphBase($('spoverlay'),
+        {
+          afterRedraw: function() {
+            log("Called afterRedraw");
+          
+            // average the y values of the data
+            var sum = 0.0;
+            for (var i = 0; i < this.data.length; i++) {
+              sum += this.data[i][1];
+            }
+            log(sum);
+            var average = sum / this.data.length;
+          
+            // draw a line
+            this.overlayContext.beginPath();
+            this.overlayContext.strokeStyle = "#f00";
+            this.overlayContext.moveTo(0, this.yToCanvas(average));
+            this.overlayContext.lineTo(this.width, this.yToCanvas(average));
+            this.overlayContext.stroke();
+          }
+        });
+        scatterPlotOverlay.freezeRedraw();
+        log("Added point 1");
+        scatterPlotOverlay.addPoint(100, 20, 1);
+        log("Added point 2");
+        scatterPlotOverlay.addPoint(500, 100, 2);
+        log("Added point 3");
+        scatterPlotOverlay.addPoint(300, 60, 3);
+        log("Added point 4");
+        scatterPlotOverlay.addPoint(200, 40, 4);
+        log("Added point 5");
+        scatterPlotOverlay.addPoint(600, 120, 5);
+        log("Added point 6");
+        scatterPlotOverlay.addPoint(400, 80, 6);
+        log("Unfroze");
+        scatterPlotOverlay.unfreezeRedraw(true);
+      
+        // draw a scatter plot that is scaled
+        var scatterPlotScaled = new GraphBase($('spscaled'),
+          {
+            minX: 1200,
+            maxX: 1300,
+            minY: 11,
+            maxY: 20
+          }
+        );
+        scatterPlotScaled.addPoint(1201, 13);
+        scatterPlotScaled.addPoint(1290, 19);
+        scatterPlotScaled.addPoint(1250, 18);
+        scatterPlotScaled.addPoint(1280, 14);
+        scatterPlotScaled.addPoint(1202, 11);
+        scatterPlotScaled.addPoint(1273, 20);
+        scatterPlotScaled.addPoint(1212, 12);
+      
+        var lineRemove = new GraphBase($("lineremove"), { connectPoints: true });
+        lineRemove.freezeRedraw();
+        lineRemove.addPoint(100, 20, 1);
+        lineRemove.addPoint(500, 100, 2);
+        lineRemove.addPoint(300, 60, 3);
+        lineRemove.addPoint(200, 40, 4);
+        lineRemove.addPoint(600, 120, 5);
+        lineRemove.addPoint(400, 80, 6);
+        lineRemove.unfreezeRedraw(true);
+      
+        /* remove the points in a few seconds */
+        new PeriodicalExecuter(function(pe) {
+          log("Removing Points");
+          lineRemove.removePoint(2);
+          lineRemove.removePoint(3);
+          lineRemove.removePoint(4);
+          lineRemove.removePoint(6);
+          log("Points Removed");
+          pe.stop();
+        }, 10);
+        
+      });
+    </script>
+  </body>
+</html>
