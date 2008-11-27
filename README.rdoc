@@ -1,6 +1,6 @@
 = Chartsy
 
-_A somewhat decent charting library that utilizes the HTML canvas._
+A somewhat decent charting library that utilizes the HTML canvas.
 
 == Using Chartsy
 
