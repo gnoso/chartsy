@@ -129,15 +129,15 @@ var GraphBase = Class.create({
       0, 0);
     this.backContext = this.backCanvas.getContext('2d');
     
-    // put the graph canvas in
-    var newId = element.identify() + "_canvas";
-    this.graphCanvas = this.createCanvas(newId);
-    this.graphContext = this.graphCanvas.getContext('2d');
-
     // put the overlay canvas in
     var overlayId = element.identify() + "_overlay"
     this.overlayCanvas = this.createCanvas(overlayId);
     this.overlayContext = this.overlayCanvas.getContext('2d');
+    
+    // put the graph canvas in
+    var newId = element.identify() + "_canvas";
+    this.graphCanvas = this.createCanvas(newId);
+    this.graphContext = this.graphCanvas.getContext('2d');
     
     /* handle drawing the background */
     if (this.options.background) {
@@ -159,8 +159,8 @@ var GraphBase = Class.create({
       this.options.onMouseOut = Prototype.emptyFunction;
     }
     this.hoveredItem = null;
-    Event.observe(this.overlayCanvas, "mousemove", this.mouseMove.bindAsEventListener(this));
-    Event.observe(this.overlayCanvas, "mouseout", this.mouseOut.bindAsEventListener(this));
+    Event.observe(this.graphCanvas, "mousemove", this.mouseMove.bindAsEventListener(this));
+    Event.observe(this.graphCanvas, "mouseout", this.mouseOut.bindAsEventListener(this));
     if (!this.options.hoverThreshold) {
       this.options.hoverThreshold = 5;
     }
@@ -227,14 +227,14 @@ var GraphBase = Class.create({
     if (Object.isFunction(pointImage)) {
       // handle custom functions
       var handler = pointImage.bind(this)
-      handler(this.scaleX(x), this.yToCanvas(this.scaleY(y)));
+      handler(Math.round(this.scaleX(x)), Math.round(this.yToCanvas(this.scaleY(y))));
     }
     else {
       // treat it as an image
       width = pointImage.width;
       height = pointImage.height;
-      x = this.scaleX(x) - (width / 2.0);
-      y = this.yToCanvas(this.scaleY(y)) - (height / 2.0);
+      x = Math.round(this.scaleX(x)) - (width / 2.0);
+      y = Math.round(this.yToCanvas(this.scaleY(y))) - (height / 2.0);
       this.graphContext.drawImage(pointImage, x, y);
     }
   },
@@ -299,8 +299,9 @@ var GraphBase = Class.create({
     
     var handler = this.options.onMouseOver.bind(this);
     handler(this.data[this.hoveredItem][2], this.data[this.hoveredItem][0],
-        this.data[this.hoveredItem][1], this.scaleX(this.data[this.hoveredItem][0]),
-        this.yToCanvas(this.scaleY(this.data[this.hoveredItem][1])));
+        this.data[this.hoveredItem][1], 
+        Math.round(this.scaleX(this.data[this.hoveredItem][0])),
+        Math.round(this.yToCanvas(this.scaleY(this.data[this.hoveredItem][1]))));
   },
   
   // unsets any previously set hovers, calling the mouseOut event if we have
