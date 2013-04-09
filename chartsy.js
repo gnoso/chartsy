@@ -1,7 +1,6 @@
 /*
- * blech.js
- * A graphing library for javascript, by Alan Johnson, Gnoso.
- * Because nobody likes graphing, but everybody has to do it.
+ * chartsy.js
+ * A graphing library for javascript; originally by Alan Johnson, Gnoso. Cleaned up and modified by Taylor Shuler.
  */
  
 /*
@@ -23,247 +22,247 @@ var GraphBase = Class.create({
    */
   initialize: function(element, options) {
     
-    this.element = element;
+    element = element;
     
     // figure out padding
     if (element.getStyle('padding-top')) {
-      this.paddingTop = parseInt(element.getStyle('padding-top'));
+      paddingTop = parseInt(element.getStyle('padding-top'));
     }
     else {
-      this.paddingTop = 0;
+      paddingTop = 0;
     }
     if (element.getStyle('padding-bottom')) {
-      this.paddingBottom = parseInt(element.getStyle('padding-bottom'));
+      paddingBottom = parseInt(element.getStyle('padding-bottom'));
     }
     else {
-      this.paddingBottom = 0;
+      paddingBottom = 0;
     }
     if (element.getStyle('padding-left')) {
-      this.paddingLeft = parseInt(element.getStyle('padding-left'));
+      paddingLeft = parseInt(element.getStyle('padding-left'));
     }
     else {
-      this.paddingLeft = 0;
+      paddingLeft = 0;
     }
     if (element.getStyle('padding-right')) {
-      this.paddingRight = parseInt(element.getStyle('padding-right'));
+      paddingRight = parseInt(element.getStyle('padding-right'));
     }
     else {
-      this.paddingRight = 0;
+      paddingRight = 0;
     }
     
     // figure out height and width
-    this.width = parseInt(element.getWidth() - (this.paddingLeft + this.paddingRight));
-    this.height = parseInt(element.getHeight() - (this.paddingTop + this.paddingBottom));
+    width = parseInt(element.getWidth() - (paddingLeft + paddingRight));
+    height = parseInt(element.getHeight() - (paddingTop + paddingBottom));
     
-    this.backWidth = this.width + this.paddingLeft + this.paddingRight;
-    this.backHeight = this.height + this.paddingTop + this.paddingBottom;
+    backWidth = width + paddingLeft + paddingRight;
+    backHeight = height + paddingTop + paddingBottom;
     
-    this.redrawFrozen = false;
+    redrawFrozen = false;
     
     if (options != null) {
-      this.options = options; 
+      options = options; 
     }
     else {
       // default options
-      this.options = new Array();
+      options = new Array();
     }
   
     /* if the user gave us a min and max x, use it, otherwise, just use the 
        height and width for the parameters */
-    if (!this.options.minX) {
-      this.options.minX = 0;
+    if (!options.minX) {
+      options.minX = 0;
     }
-    if (!this.options.minY) {
-      this.options.minY = 0;
+    if (!options.minY) {
+      options.minY = 0;
     }
-    if (!this.options.maxX) {
-      this.options.maxX = this.width;
+    if (!options.maxX) {
+      options.maxX = width;
     }
-    if (!this.options.maxY) {
-      this.options.maxY = this.height;
+    if (!options.maxY) {
+      options.maxY = height;
     }
   
     /* set up our scales */
-    this.xScale = this.width / (this.options.maxX - this.options.minX);
-    this.yScale = this.height / (this.options.maxY - this.options.minY);
+    xScale = width / (options.maxX - options.minX);
+    yScale = height / (options.maxY - options.minY);
   
     /* if there's no pointImage set up for the options, give it the default */
-    if (!this.options.pointImage) {
-      this.options.pointImage = function(x, y) {
+    if (!options.pointImage) {
+      options.pointImage = function(x, y) {
         // just draw a circle on the canvas
-        this.graphContext.beginPath();
-        this.graphContext.fillStyle = "#000";
-        this.graphContext.arc(x, y, 2, 0, Math.PI*2, true);
-        this.graphContext.fill();
+        graphContext.beginPath();
+        graphContext.fillStyle = "#000";
+        graphContext.arc(x, y, 2, 0, Math.PI*2, true);
+        graphContext.fill();
       };
     }
     
     /* if there's no connectPoints callback present, give it the default */
-    if (!this.options.onConnectPoints) {
-      this.options.onConnectPoints = function(x1, y1, x2, y2) {
-        this.graphContext.beginPath();
-        this.graphContext.strokeStyle = "#000";
-        this.graphContext.moveTo(x1, y1);
-        this.graphContext.lineTo(x2, y2);
-        this.graphContext.stroke();
+    if (!options.onConnectPoints) {
+      options.onConnectPoints = function(x1, y1, x2, y2) {
+        graphContext.beginPath();
+        graphContext.strokeStyle = "#000";
+        graphContext.moveTo(x1, y1);
+        graphContext.lineTo(x2, y2);
+        graphContext.stroke();
       };
     }
     
-    if (!this.options.afterRedraw) {
-      this.options.afterRedraw = Prototype.emptyFunction;
+    if (!options.afterRedraw) {
+      options.afterRedraw = Prototype.emptyFunction;
     }
     
-    this.data = new Array();
+    data = new Array();
     
     // put a placeholder div in
     var placeId = element.identify() + "_placeholder";
     element.insert("<div id=\"" + placeId + 
-        "\" style=\"position: relative;height: " + this.backHeight + 
-        "px;width: " + this.backWidth + "px; top: " + -this.paddingTop + "px;left: " +
-        -this.paddingLeft + "px;\"></div");
-    this.placeHolder = $(placeId);
+        "\" style=\"position: relative;height: " + backHeight + 
+        "px;width: " + backWidth + "px; top: " + -paddingTop + "px;left: " +
+        -paddingLeft + "px;\"></div");
+    placeHolder = $(placeId);
     
     // put the background canvas in
     var backId = element.identify() + "_background"
-    this.backCanvas = this.createCanvas(backId, this.backWidth, this.backHeight, 
+    backCanvas = createCanvas(backId, backWidth, backHeight, 
       0, 0);
-    this.backContext = this.backCanvas.getContext('2d');
+    backContext = backCanvas.getContext('2d');
     
     // put the overlay canvas in
     var overlayId = element.identify() + "_overlay"
-    this.overlayCanvas = this.createCanvas(overlayId);
-    this.overlayContext = this.overlayCanvas.getContext('2d');
+    overlayCanvas = createCanvas(overlayId);
+    overlayContext = overlayCanvas.getContext('2d');
     
     // put the graph canvas in
     var newId = element.identify() + "_canvas";
-    this.graphCanvas = this.createCanvas(newId);
-    this.graphContext = this.graphCanvas.getContext('2d');
+    graphCanvas = createCanvas(newId);
+    graphContext = graphCanvas.getContext('2d');
     
     /* handle drawing the background */
-    if (this.options.background) {
-      if (Object.isFunction(this.options.background)) {
-        var handler = this.options.background.bind(this);
+    if (options.background) {
+      if (Object.isFunction(options.background)) {
+        var handler = options.background.bind(this);
         handler();
       }
       else {
-        this.backContext.drawImage(this.options.background, 0, 0);
+        backContext.drawImage(options.background, 0, 0);
       }
     }
     
     /* add a mouseover event to the canvas --
        weird thing, we have to do it to the overlay */
-    if (!this.options.onMouseOver) {
-      this.options.onMouseOver = Prototype.emptyFunction;
+    if (!options.onMouseOver) {
+      options.onMouseOver = Prototype.emptyFunction;
     }
-    if (!this.options.onMouseOut) {
-      this.options.onMouseOut = Prototype.emptyFunction;
+    if (!options.onMouseOut) {
+      options.onMouseOut = Prototype.emptyFunction;
     }
-    this.hoveredItem = null;
-    Event.observe(this.graphCanvas, "mousemove", this.mouseMove.bindAsEventListener(this));
-    Event.observe(this.graphCanvas, "mouseout", this.mouseOut.bindAsEventListener(this));
-    if (!this.options.hoverThreshold) {
-      this.options.hoverThreshold = 5;
+    hoveredItem = null;
+    Event.observe(graphCanvas, "mousemove", mouseMove.bindAsEventListener(this));
+    Event.observe(graphCanvas, "mouseout", mouseOut.bindAsEventListener(this));
+    if (!options.hoverThreshold) {
+      options.hoverThreshold = 5;
     }
     
   },
   
   /* Redraws the graph */
   redrawGraph: function() {
-    this.clearPlotArea();
-    this.sortData();
+    clearPlotArea();
+    sortData();
     
-    for (var i = 0; i < this.data.length; i++) {
-      x = this.data[i][0];
-      y = this.data[i][1];
+    for (var i = 0; i < data.length; i++) {
+      x = data[i][0];
+      y = data[i][1];
       
       // if there should be a line on the graph, add it
       // we want to skip the first point (it doesn't have anything to connect to)
-      if (this.options.connectPoints && this.data.length > i + 1) {
-        x2 = this.data[i + 1][0];
-        y2 = this.data[i + 1][1];
-        this.connectPoints(x, y, x2, y2);
+      if (options.connectPoints && data.length > i + 1) {
+        x2 = data[i + 1][0];
+        y2 = data[i + 1][1];
+        connectPoints(x, y, x2, y2);
       }
       
       // actually draw the point on the graph
-      this.drawPoint(x, y);
+      drawPoint(x, y);
     }
     
     // call the afterRedraw event
-    var handler = this.options.afterRedraw.bind(this);
+    var handler = options.afterRedraw.bind(this);
     handler();
   },
   
   addPoint: function(x, y, id) {
     // add new point to the data array
-    this.data.push([x, y, id]);
+    data.push([x, y, id]);
 
-    if (!this.redrawFrozen) {
-      this.redrawGraph();
+    if (!redrawFrozen) {
+      redrawGraph();
     }
   },
   
   /* points have to have an id to be removed */
   removePoint: function(id) {
     var match = null;
-    for (var i = 0; i < this.data.length; i++) {
-      if (this.data[i][2] == id) {
+    for (var i = 0; i < data.length; i++) {
+      if (data[i][2] == id) {
         match = i;
         break;
       }
     }
     
     if (match != null) {
-      this.data.splice(match, 1);
+      data.splice(match, 1);
     }
     
-    if (!this.redrawFrozen) {
-      this.redrawGraph();
+    if (!redrawFrozen) {
+      redrawGraph();
     }
   },
   
   /* handles drawing a point on the canvas */
   drawPoint: function(x, y) {
-    var pointImage = this.options.pointImage;
+    var pointImage = options.pointImage;
     if (Object.isFunction(pointImage)) {
       // handle custom functions
       var handler = pointImage.bind(this)
-      handler(Math.round(this.scaleX(x)), Math.round(this.yToCanvas(this.scaleY(y))));
+      handler(Math.round(scaleX(x)), Math.round(yToCanvas(scaleY(y))));
     }
     else {
       // treat it as an image
       width = pointImage.width;
       height = pointImage.height;
-      x = Math.round(this.scaleX(x)) - (width / 2.0);
-      y = Math.round(this.yToCanvas(this.scaleY(y))) - (height / 2.0);
-      this.graphContext.drawImage(pointImage, x, y);
+      x = Math.round(scaleX(x)) - (width / 2.0);
+      y = Math.round(yToCanvas(scaleY(y))) - (height / 2.0);
+      graphContext.drawImage(pointImage, x, y);
     }
   },
   
   /* handles connecting two points on the graph */
   connectPoints: function(x1, y1, x2, y2) {
-    var handler = this.options.onConnectPoints.bind(this)
-    handler(this.scaleX(x1), this.yToCanvas(this.scaleY(y1)), 
-        this.scaleX(x2), this.yToCanvas(this.scaleY(y2)));
+    var handler = options.onConnectPoints.bind(this)
+    handler(scaleX(x1), yToCanvas(scaleY(y1)), 
+        scaleX(x2), yToCanvas(scaleY(y2)));
   },
   
   /* handles mouseovers */
   mouseMove: function(event) {
     // figure out where the x and y were in our canvas
-    var offset = this.graphCanvas.cumulativeOffset();
+    var offset = graphCanvas.cumulativeOffset();
     var eventX = Event.pointerX(event) - offset['left'];
-    var eventY = this.yToCanvas(Event.pointerY(event) - offset['top']);
+    var eventY = yToCanvas(Event.pointerY(event) - offset['top']);
     
     // find a point that is a candidate for the hover
     var i = 0;
     var match = null;
-    while (i < this.data.length) {
-      point = this.data[i];
-      xDiff = this.scaleX(point[0]) - eventX;
-      if (xDiff <= this.options.hoverThreshold &&
-          xDiff >= -this.options.hoverThreshold) {
-        yDiff = this.scaleY(point[1]) - eventY;
-        if (yDiff <= this.options.hoverThreshold &&
-            yDiff >= -this.options.hoverThreshold) {
+    while (i < data.length) {
+      point = data[i];
+      xDiff = scaleX(point[0]) - eventX;
+      if (xDiff <= options.hoverThreshold &&
+          xDiff >= -options.hoverThreshold) {
+        yDiff = scaleY(point[1]) - eventY;
+        if (yDiff <= options.hoverThreshold &&
+            yDiff >= -options.hoverThreshold) {
           match = i;
           break;
         }
@@ -273,78 +272,78 @@ var GraphBase = Class.create({
     
     // if we didn't get a match, do mouseOut or nothing
     if (match == null) {
-      return this.unsetHovered();
+      return unsetHovered();
     }
     
     // if we're already hovering on the item that we matched, do nothing
-    if (match == this.hoveredItem) {
+    if (match == hoveredItem) {
       return;
     }
     else {
-      this.setHovered(match);
+      setHovered(match);
     }
   },
   
   // handles when the mouse leaves the canvas
   mouseOut: function(event) {
-    this.unsetHovered();
+    unsetHovered();
   },
   
   // sets which item in the array is being hovered on, and calls the mouseOver
   // callback for it
   setHovered: function(id) {
-    this.unsetHovered();
+    unsetHovered();
     
-    this.hoveredItem = id;
+    hoveredItem = id;
     
-    var handler = this.options.onMouseOver.bind(this);
-    handler(this.data[this.hoveredItem][2], this.data[this.hoveredItem][0],
-        this.data[this.hoveredItem][1], 
-        Math.round(this.scaleX(this.data[this.hoveredItem][0])),
-        Math.round(this.yToCanvas(this.scaleY(this.data[this.hoveredItem][1]))));
+    var handler = options.onMouseOver.bind(this);
+    handler(data[hoveredItem][2], data[hoveredItem][0],
+        data[hoveredItem][1], 
+        Math.round(scaleX(data[hoveredItem][0])),
+        Math.round(yToCanvas(scaleY(data[hoveredItem][1]))));
   },
   
   // unsets any previously set hovers, calling the mouseOut event if we have
   // a set hover
   unsetHovered: function() {
-    if (this.hoveredItem != null) {
-      var handler = this.options.onMouseOut.bind(this);
-      handler(this.data[this.hoveredItem][2], this.data[this.hoveredItem][0],
-          this.data[this.hoveredItem][1], this.scaleX(this.data[this.hoveredItem][0]),
-          this.yToCanvas(this.scaleY(this.data[this.hoveredItem][1])));
+    if (hoveredItem != null) {
+      var handler = options.onMouseOut.bind(this);
+      handler(data[hoveredItem][2], data[hoveredItem][0],
+          data[hoveredItem][1], scaleX(data[hoveredItem][0]),
+          yToCanvas(scaleY(data[hoveredItem][1])));
     }
     
-    this.hoveredItem = null;
+    hoveredItem = null;
   },
   
   /* sorts the array of data by the x-axis */
   sortData: function() {
     // unset the hovered item, since we go by array index right now
-    this.unsetHovered();
+    unsetHovered();
     
-    this.data.sort(function(a, b) { 
+    data.sort(function(a, b) { 
       return a[0] - b[0];
     });
   },
   
   /* converts y values to canvas coordinates */
   yToCanvas: function(y) {
-    return this.height - y;
+    return height - y;
   },
   
   /* clears the graph area */
   clearPlotArea: function() {
-   this.graphContext.clearRect(0, 0, this.width, this.height);
+   graphContext.clearRect(0, 0, width, height);
   },
   
   /* clears the overlay canvas */
   clearOverlay: function() {
-    this.overlayContext.clearRect(0, 0, this.width, this.height);
+    overlayContext.clearRect(0, 0, width, height);
   },
   
   /* freezes redrawing the graph */
   freezeRedraw: function() {
-    this.redrawFrozen = true;
+    redrawFrozen = true;
   },
   
   /* unfreezes redrawing
@@ -352,43 +351,43 @@ var GraphBase = Class.create({
    */
   unfreezeRedraw: function(redrawNow) {
     
-    this.redrawFrozen = false;
+    redrawFrozen = false;
     
     if (redrawNow) {
-      this.redrawGraph();
+      redrawGraph();
     }
   },
   
   /* scales an x value to the canvas */
   scaleX: function(x) {
-    return (x - this.options.minX) * this.xScale;
+    return (x - options.minX) * xScale;
   },
   
   /* scales a y value to the canvas */
   scaleY: function(y) {
-    return (y - this.options.minY) * this.yScale;
+    return (y - options.minY) * yScale;
   },
   
   /* method for creating a new canvas -- counts on excanvas for IE */
   createCanvas: function(id, width, height, left, top) {
 
     if (height == null) {
-      height = this.height;
+      height = height;
     }
     if (width == null) {
-      width = this.width;
+      width = width;
     }
     if (left == null) {
-      left = this.paddingLeft;
+      left = paddingLeft;
     }
     if (top == null) {
-      top = this.paddingTop;
+      top = paddingTop;
     }
         
     if (typeof G_vmlCanvasManager != "undefined") {
       // if we're using excanvas
       var canvas = document.createElement('canvas');
-      this.placeHolder.insert(canvas);
+      placeHolder.insert(canvas);
       canvas.style.width = width;
       canvas.style.height = height;
       canvas.style.position = "absolute";
@@ -400,7 +399,7 @@ var GraphBase = Class.create({
     }
     else {
       // other browsers
-      this.placeHolder.insert("<canvas id=\"" + id + "\" width=\"" + width + "\" " +
+      placeHolder.insert("<canvas id=\"" + id + "\" width=\"" + width + "\" " +
           "height=\"" + height + "\" style=\"position: absolute; top: " + top + 
           "px; left: " + left + "px;\" />");
     }
