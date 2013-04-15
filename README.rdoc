@@ -1,16 +1,3 @@
 = Chartsy
 
 A somewhat decent charting library that utilizes the HTML canvas.
-
-== Using Chartsy
-
-For now, check out the test.html file and learn by example. Hopefully I'll be able to get some better documentation in place in the near future.
-
-== TODO
-
-* Implement multiple charts in the line graphs.
-* Implement easy to use wrappers for the line graphs.
-* Figure out what the best overlay techniques are (questioning if we should just hook callbacks instead of always providing overlays and the background canvas).
-
-* Provide other graph types (punch card, pie chart)
-* Provide decent documentation.
